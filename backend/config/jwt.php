@@ -109,8 +109,13 @@ return [
     |--------------------------------------------------------------------------
     | Show blacklisted token error message
     |--------------------------------------------------------------------------
+    |
+    | Must stay true: in this package version, the blacklist check is only
+    | performed when this flag is enabled, so false lets logged-out tokens
+    | keep working.
+    |
     */
-    'show_black_list_exception' => env('JWT_SHOW_BLACKLIST_EXCEPTION', false),
+    'show_black_list_exception' => env('JWT_SHOW_BLACKLIST_EXCEPTION', true),
 
     /*
     |--------------------------------------------------------------------------

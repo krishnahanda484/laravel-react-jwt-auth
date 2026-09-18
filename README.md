@@ -1,6 +1,6 @@
 # Full-Stack JWT Authentication System
 
-A complete authentication system with a **Laravel 11** RESTful API backend (JWT-based
+A complete authentication system with a **Laravel 12** RESTful API backend (JWT-based
 sessions via [`php-open-source-saver/jwt-auth`](https://github.com/PHP-Open-Source-Saver/jwt-auth))
 and a **React 19 + Vite** frontend.
 
@@ -25,19 +25,21 @@ auth-system/
 
 | Layer    | Technology |
 |----------|------------|
-| Backend  | Laravel 11, PHP 8.2+, `php-open-source-saver/jwt-auth` ^2.8 |
+| Backend  | Laravel 12, PHP 8.2+, `php-open-source-saver/jwt-auth` ^2.8 |
 | Frontend | React 19, Vite, React Router, Axios |
-| Database | MySQL (default) — SQLite also works with a one-line `.env` change |
+| Database | SQLite by default (zero setup); MySQL supported via `.env` |
 
 ## Prerequisites
 
-Install these locally before you start (none of them are required to read the code,
-only to run it):
-
-- PHP >= 8.2 with the usual extensions (`pdo_mysql`, `mbstring`, `openssl`, `bcmath`, `ctype`, `fileinfo`)
+- PHP >= 8.2 with these extensions enabled: `openssl`, `mbstring`, `fileinfo`, `sodium`,
+  `pdo_sqlite` (or `pdo_mysql` for MySQL), `curl`, `zip`
 - [Composer](https://getcomposer.org/)
-- MySQL 8+ (or any Laravel-supported DB — see "Using SQLite instead" below)
 - Node.js >= 18 and npm
+
+> **Windows without admin rights:** download the portable PHP zip from
+> <https://windows.php.net/download/> and `composer.phar` from <https://getcomposer.org/download/>,
+> copy `php.ini-development` to `php.ini`, and uncomment the extensions above. Then use
+> `php composer.phar ...` in place of `composer ...`.
 
 ---
 
@@ -46,11 +48,30 @@ only to run it):
 ```bash
 cd backend
 composer install
-cp .env.example .env
+cp .env.example .env          # Windows cmd: copy .env.example .env
 php artisan key:generate
+php artisan jwt:secret
 ```
 
-Open `.env` and set your database credentials:
+Create the SQLite database file, then run the migrations:
+
+```bash
+touch database/database.sqlite   # Windows PowerShell: New-Item database\database.sqlite
+php artisan migrate
+```
+
+Start the API:
+
+```bash
+php artisan serve
+```
+
+The API is now running at `http://localhost:8000`. `FRONTEND_URL` in `.env` (default
+`http://localhost:5173`) is the origin allowed by CORS (`config/cors.php`).
+
+### Using MySQL instead of SQLite
+
+Create a database, then in `backend/.env` replace `DB_CONNECTION=sqlite` with:
 
 ```
 DB_CONNECTION=mysql
@@ -61,40 +82,7 @@ DB_USERNAME=root
 DB_PASSWORD=
 ```
 
-Create the database (e.g. `mysql -u root -e "CREATE DATABASE laravel_jwt_auth"`), then
-generate the JWT signing secret and run the migrations:
-
-```bash
-php artisan jwt:secret
-php artisan migrate
-```
-
-Also set `FRONTEND_URL` in `.env` (defaults to `http://localhost:5173`) — it's used by
-`config/cors.php` to allow the React app to call the API.
-
-Start the API:
-
-```bash
-php artisan serve
-```
-
-The API is now running at `http://localhost:8000`.
-
-### Using SQLite instead of MySQL
-
-```bash
-touch database/database.sqlite
-```
-
-and in `.env` set:
-
-```
-DB_CONNECTION=sqlite
-DB_DATABASE=/absolute/path/to/backend/database/database.sqlite
-```
-
-Then run `php artisan migrate` as above.
-
+and run `php artisan migrate`.
 ### Backend API endpoints
 
 | Method | Endpoint             | Auth required | Description                              |
